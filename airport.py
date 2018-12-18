@@ -15,14 +15,14 @@ ax.set_xlim(14.1698953,14.3698953)
 print("1")
 #ADD OSM BASEMAP
 osm_tiles=OSM()
-ax.add_image(osm_tiles,16, interpolation='bilinear') #Zoom Level 13
+ax.add_image(osm_tiles,13) #Zoom Level 13
 print("2")
 #PLOT JFK INTL AIRPORT
 ax.text(50.100499598,14.2698953,'JFK Intl',horizontalalignment='right',size='large')
 ax.plot([50.100499598],[14.255998976],'bo')
 print("3")
 #PLOT TRACK
-track, = ax.plot([], [],'ro')
+track,  = ax.plot([], [],'ro')
 print("4")
 
 print("5")
@@ -35,12 +35,13 @@ def update(self):
     lat_list=[]
     long_list=[]
 
-    for flight_data in js_str['acList']:
-        lat_list.append(flight_data['Lat'])
-        long_list.append(flight_data['Long'])
+    for num,flight_data in enumerate(js_str['acList']):
+        lat=flight_data['Lat']
+        lon=flight_data['Long']
+        lat_list.append(lat)
+        long_list.append(lon)
     track.set_data(long_list,lat_list)
-    print(long_list,lat_list)
-    return track
+    return track,
 
 #UPDATING EVERY SECOND
 anim = animation.FuncAnimation(fig, update,interval=1000, blit=False)
