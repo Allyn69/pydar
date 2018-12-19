@@ -1,36 +1,42 @@
 #%matplotlib tk
-import urllib.request
 import json
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import cartopy.crs as ccrs
-from cartopy.io.img_tiles import OSM
+from cartopy.io.img_tiles import OSM, GoogleTiles
 import requests
+from cartopy.io import shapereader
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
-#SET AXES
-fig, ax = plt.subplots()
-ax=plt.axes(projection=ccrs.PlateCarree())
-ax.set_ylim(50.000499598,50.200499598)
-ax.set_xlim(14.1698953,14.3698953)
-print("1")
-#ADD OSM BASEMAP
-osm_tiles=OSM()
-ax.add_image(osm_tiles,13) #Zoom Level 13
-print("2")
-#PLOT JFK INTL AIRPORT
-ax.text(50.100499598,14.2698953,'JFK Intl',horizontalalignment='right',size='large')
-ax.plot([50.100499598],[14.255998976],'bo')
-print("3")
-#PLOT TRACK
-track,  = ax.plot([], [],'ro')
-print("4")
 
-print("5")
-#UPDATE FUNCTION
+def create_map(projection):
+    fig, ax = plt.subplots(figsize=(9, 13),
+                           subplot_kw=dict(projection=projection))
+    gl = ax.gridlines(draw_labels=True)
+    gl.xlabels_top = gl.ylabels_right = False
+    gl.xformatter = LONGITUDE_FORMATTER
+    gl.yformatter = LATITUDE_FORMATTER
+    return fig, ax
+
 def update(self):
+    from opensky_api import OpenSkyApi
+    api = OpenSkyApi()
+    lat_list=[]
+    long_list=[]
+    # bbox = (min latitude, max latitude, min longitude, max longitude)
+    states = api.get_states(bbox=(50.000499598, 50.200499598, 14.1698953, 14.3698953))
+    for s in states.states:
+        lat=s.latitude
+        lon=s.longitude
+        lat_list.append(lat)
+        long_list.append(lon)
+    print(long_list,lat_list)
+    track.set_data(long_list,lat_list)
+    return track,
+
+def update1(self):
     #SEND QUERY
-    r = requests.get('http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat=50.08239246&lng=14.300847&fDstL=0&fDstU=30', headers={'Connection':'close'})
-    print(r.url)
+    r = requests.get('http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat=50.100499598&lng=14.2698953&fDstL=0&fDstU=20', headers={'Connection':'close'})
     js_str=r.json()
     lat_list=[]
     long_list=[]
@@ -40,10 +46,25 @@ def update(self):
         lon=flight_data['Long']
         lat_list.append(lat)
         long_list.append(lon)
+    print(long_list,lat_list)
     track.set_data(long_list,lat_list)
     return track,
 
-#UPDATING EVERY SECOND
-anim = animation.FuncAnimation(fig, update,interval=1000, blit=False)
-print("6")
-plt.show()
+if __name__ == '__main__':
+    print("loading")
+    projection = ccrs.PlateCarree()
+    osm_tiles=OSM()
+    extent = [14.1698953, 14.3698953,50.000499598, 50.200499598 ]
+    #extent = [14.1, 14.4, 49.9, 50.4]
+    #osm_tiles=GoogleTiles()
+    fig, ax =  create_map(projection)
+    ax.set_extent(extent, projection)
+
+    ax.add_image(osm_tiles,13) #Zoom Level 13
+    #PLOT JFK INTL AIRPORT
+    ax.text(14.2698953,50.100499598,'letiště václava havla',horizontalalignment='right',size='large')
+    ax.plot([14.255998976],[50.100499598], 'bo')
+    #PLOT TRACK
+    track,  = ax.plot([], [],'ro')
+    anim = animation.FuncAnimation(fig, update1,interval=3000, blit=False)
+    plt.show()
