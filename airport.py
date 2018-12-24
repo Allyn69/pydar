@@ -10,7 +10,7 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 
 def create_map(projection):
-    fig, ax = plt.subplots(figsize=(13, 9),
+    fig, ax = plt.subplots(figsize=(12, 12),
                            subplot_kw=dict(projection=projection))
     gl = ax.gridlines(draw_labels=True)
     gl.xlabels_top = gl.ylabels_right = False
@@ -18,7 +18,7 @@ def create_map(projection):
     gl.yformatter = LATITUDE_FORMATTER
     return fig, ax
 
-def update(self):
+def update2(self):
     from opensky_api import OpenSkyApi
     api = OpenSkyApi()
     lat_list=[]
@@ -34,63 +34,46 @@ def update(self):
     track.set_data(long_list,lat_list)
     return track,
 
-def update1(self):
-    #SEND QUERY
+def update(self):
     r = requests.get('http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat=50.100499598&lng=14.2698953&fDstL=0&fDstU=200', headers={'Connection':'close'})
     js_str=r.json()
     lat_list=[]
     long_list=[]
     op_list =[]
-
-    for num,flight_data in enumerate(js_str['acList']):
+    #print(js_str)
+    #print(js_str['lastDv'])
+    if js_str['lastDv'] == str(-1):
+        return track,
+    for a in annotation_list:
+        a.remove()
+    annotation_list[:] = []
+    fig.canvas.draw()
+    for flight_data in js_str['acList']:
         lat=flight_data['Lat']
         lon=flight_data['Long']
         op=flight_data['Icao']
-        #alt=flight_data['Alt']
-        #color = [str(item/255.) for item in alt]
         lat_list.append(lat)
         long_list.append(lon)
-        op_list.append(op) #STORE OPERATOR DATA INTO LIST
-    print((long_list,lat_list))
+        op_list.append(op)
+        print((op, lon, lat))
+        ano = ax.annotate(flight_data['Icao'],
+                    xy=(flight_data['Long'],flight_data['Lat']))
+        annotation_list.append(ano)
     track.set_data(long_list,lat_list)
-
-    # LABELING
-    for num, annot in enumerate(anotation_list):
-        annot.remove()
-    anotation_list[:]=[]
-
-    #CREATE LABEL CONTAINER
-    for num,annot in enumerate(js_str['acList']):
-        annotation=ax.annotate('text',xy=(0,0),size='smaller')
-        anotation_list.append(annotation)
-
-    # UPDATE LABEL POSITION AND OPERATOR
-    for num,ano in enumerate(anotation_list):
-        ano.set_position((long_list[num],lat_list[num]))
-        ano.xy = (long_list[num],lat_list[num])
-        txt_op=str(op_list[num])
-        ano.set_text(txt_op)
-
-    return track,ano,
+    return track,
 
 if __name__ == '__main__':
     print("loading")
     projection = ccrs.PlateCarree()
-    anotation_list = []
-    #osm_tiles=OSM()
+    annotation_list = []
     osm_tiles=OSM()
     #extent = [14.1698953, 14.3698953,50.000499598, 50.200499598 ]
     extent = [12.5, 17, 48.5, 51]
     #osm_tiles=GoogleTiles()
     fig, ax =  create_map(projection)
     ax.set_extent(extent, projection)
-
-    #ax.add_image(osm_tiles,7, interpolation='bicubic') #Zoom Level 13
     ax.add_image(osm_tiles,7)
-    #PLOT JFK INTL AIRPORT
-    #ax.text(14.2698953,50.100499598,'letiště václava havla',horizontalalignment='right',size='large')
     ax.plot([14.255998976],[50.100499598], 'bo')
-    #PLOT TRACK
     track, = ax.plot([],[],'ro')
-    anim = animation.FuncAnimation(fig,update1,interval=2000, blit=False)
+    anim = animation.FuncAnimation(fig,update,interval=2000, blit=False)
     plt.show()
