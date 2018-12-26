@@ -57,7 +57,7 @@ def update_flights(self):
         long_list.append(longitude)
         #print((icao, longitude, latitude))
         anonnotation = ax.annotate(icao,
-                    xy=(longitude,latitude))
+                    xy=(longitude,latitude), fontsize=8, fontweight='bold')
         annotation_list.append(anonnotation)
     track.set_data(long_list,lat_list)
     return track,
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     ax.set_extent(extent, projection)
     ax.add_image(osm_tiles,7,interpolation='spline36')
     ax.plot([LONGITUDE],[LATITUDE], 'bs')
-    ax.legend()
+    ax.text(LONGITUDE, LATITUDE, r'an equation: $E=mc^2$', fontsize=15)
     track, = ax.plot([],[],'ro')#, fillstyle='none')
     fig.suptitle('This is a somewhat long figure title', fontsize=16)
     anim = animation.FuncAnimation(fig,update_flights,interval=2000, blit=False)
