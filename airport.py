@@ -37,7 +37,7 @@ def update_flights(self, long, lat, dist):
     #print(js_str)
     # Chekc if call was correct
     if js_str['lastDv'] == str(-1):
-        return track, annotation_list
+        return track_flights, annotation_list
 
     # Clean annotation list
     for anot in annotation_list:
@@ -46,18 +46,18 @@ def update_flights(self, long, lat, dist):
     fig.canvas.draw()
 
     # Get lat, long a name of all flights
-    for flight_data in js_str['acList']:
-        latitude = flight_data['Lat']
-        longitude = flight_data['Long']
-        icao= flight_data['Icao']
+    for flight in js_str['acList']:
+        latitude = flight['Lat']
+        longitude = flight['Long']
+        icao = flight['Icao']
         lat_list.append(latitude)
         long_list.append(longitude)
         #print((icao, longitude, latitude))
         anonnotation = ax.annotate(icao,
                     xy=(longitude,latitude), fontsize=8, fontweight='bold')
         annotation_list.append(anonnotation)
-    track.set_data(long_list,lat_list)
-    return track,
+    track_flights.set_data(long_list,lat_list)
+    return track_flights,
 
 def create_extent(long, lat, dist):
     # TODO: rewrite to a loop
@@ -93,9 +93,9 @@ if __name__ == '__main__':
 
     # Put together extented projection with ax
     ax.set_extent(extent, projection)
-    ax.add_image(osm_tiles,7,interpolation='spline36')
+    ax.add_image(osm_tiles,8,interpolation='spline36')
     ax.plot([longitude],[latitude], 'bs')
-    track, = ax.plot([],[],'ro')#, fillstyle='none')
+    track_flights, = ax.plot([],[],'ro')#, fillstyle='none')
     fig.suptitle('This is a somewhat long figure title', fontsize=16)
 
     # Update the plot every 2 seconds until close
