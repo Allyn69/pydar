@@ -10,20 +10,12 @@ import sys
 from geopy import Point
 from geopy.distance import vincenty
 
-print(len(sys.argv))
-if len(sys.argv) == 3:
-    LATITUDE = float(sys.argv[1])
-    LONGITUDE = float(sys.argv[2])
-else:
-    LATITUDE = 50.10049959
-    LONGITUDE = 14.255998976
-    print("Using default values. Your arguments are wrong")
-
 #GPS COORDINATES OF A POINT WE WANT TO OBSERVE
-#LATITUDE = 50.10049959
-#LONGITUDE = 14.255998976
+DEFAULT_LATITUDE = 50.10049959
+DEFAULT_LONGITUDE = 14.255998976
 
 def create_map(projection):
+    # create figure and ax with gridlines and formated axes
     fig, ax = plt.subplots(figsize=(10, 10),
                            subplot_kw=dict(projection=projection))
     gl = ax.gridlines(draw_labels=True)
@@ -33,22 +25,27 @@ def create_map(projection):
     gl.yformatter = LATITUDE_FORMATTER
     return fig, ax
 
-def update_flights(self):
-    r = requests.get('http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat={}&lng={}&fDstL=0&fDstU=100'.format(LATITUDE, LONGITUDE), headers={'Connection':'close'})
+def update_flights(self, long, lat, dist):
+    # Request fro AdsExchange API
+    url = 'http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json'
+    payload = {'lat': lat, 'lng': long,'fDstL': 0, 'fDstU': dist}
+    #r = requests.get('http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat={}&lng={}&fDstL=0&fDstU={}'.format(lat, long, distKm), headers={'Connection':'close'})
+    r = requests.get(url, params=payload, headers={'Connection':'close'})
     js_str=r.json()
     lat_list=[]
     long_list=[]
     #print(js_str)
-    #print(js_str['lastDv'])
+    # Chekc if call was correct
     if js_str['lastDv'] == str(-1):
         return track, annotation_list
 
+    # Clean annotation list
     for anot in annotation_list:
         anot.remove()
-
     annotation_list[:] = []
     fig.canvas.draw()
 
+    # Get lat, long a name of all flights
     for flight_data in js_str['acList']:
         latitude = flight_data['Lat']
         longitude = flight_data['Long']
@@ -62,31 +59,45 @@ def update_flights(self):
     track.set_data(long_list,lat_list)
     return track,
 
+def create_extent(long, lat, dist):
+    # TODO: rewrite to a loop
+    # Callculate gps coordinates for square around point of interest
+    extent_north =  vincenty(kilometers=dist).destination(Point(lat, long), 0).format_decimal()
+    extent_east = vincenty(kilometers=dist).destination(Point(lat, long), 90).format_decimal()
+    extent_south = vincenty(kilometers=dist).destination(Point(lat, long), 180).format_decimal()
+    extent_west =  vincenty(kilometers=dist).destination(Point(lat, long), 270).format_decimal()
+    return [float(extent_west.split(',')[1]), float(extent_east.split(',')[1]), float(extent_south.split(',')[0]), float(extent_north.split(',')[0])]
+
 if __name__ == '__main__':
+
     print("loading")
+    distKm = 200
+
+    # Check if point of interest was correctly given
+    # If not take default (Letiste Vaclav Havel)
+    if len(sys.argv) == 3:
+        latitude = float(sys.argv[1])
+        longitude = float(sys.argv[2])
+    else:
+        latitude = DEFAULT_LATITUDE
+        longitude = DEFAULT_LONGITUDE
+        print("Using default values. Your arguments are wrong")
+
+    # Create projection and tiles. See cartopy pckg for more info
     projection = ccrs.PlateCarree()
     annotation_list = []
-    #osm_tiles=OSM()
-    #extent = [int(LONGITUDE)-1.5, int(LONGITUDE)+3, int(LATITUDE)-1.5, int(LATITUDE)+1]
-    distKm = 200
-    extent_north =  vincenty(kilometers=distKm).destination(Point(LATITUDE, LONGITUDE), 0).format_decimal()
-    extent_east = vincenty(kilometers=distKm).destination(Point(LATITUDE, LONGITUDE), 90).format_decimal()
-    extent_south = vincenty(kilometers=distKm).destination(Point(LATITUDE, LONGITUDE), 180).format_decimal()
-    extent_west =  vincenty(kilometers=distKm).destination(Point(LATITUDE, LONGITUDE), 270).format_decimal()
-    #extent = [int(LONGITUDE)-2, int(LONGITUDE)+2, int(LATITUDE)-2, int(LATITUDE)+2]
-    print(type(extent_west))
-    print(extent_north)
-    print(extent_south)
-    print(extent_east)
-    print(extent_west)
-    extent = [float(extent_west.split(',')[1]), float(extent_east.split(',')[1]), float(extent_south.split(',')[0]), float(extent_north.split(',')[0])]
     osm_tiles=GoogleTiles()
-    fig, ax =  create_map(projection)
+
+    extent = create_extent(longitude, latitude,  distKm)
+    fig, ax = create_map(projection)
+
+    # Put together extented projection with ax
     ax.set_extent(extent, projection)
     ax.add_image(osm_tiles,7,interpolation='spline36')
-    ax.plot([LONGITUDE],[LATITUDE], 'bs')
-    ax.text(LONGITUDE, LATITUDE, r'an equation: $E=mc^2$', fontsize=15)
+    ax.plot([longitude],[latitude], 'bs')
     track, = ax.plot([],[],'ro')#, fillstyle='none')
     fig.suptitle('This is a somewhat long figure title', fontsize=16)
-    anim = animation.FuncAnimation(fig,update_flights,interval=2000, blit=False)
+
+    # Update the plot every 2 seconds until close
+    anim = animation.FuncAnimation(fig, update_flights,fargs=[longitude, latitude,  distKm], interval=2000, blit=False)
     plt.show()
