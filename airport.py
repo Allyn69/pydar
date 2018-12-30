@@ -9,6 +9,8 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import sys
 from geopy import Point
 from geopy.distance import vincenty
+import random
+import numpy
 
 #GPS COORDINATES OF A POINT WE WANT TO OBSERVE
 DEFAULT_LATITUDE = 50.10049959
@@ -25,15 +27,15 @@ def create_map(projection):
     gl.yformatter = LATITUDE_FORMATTER
     return fig, ax
 
-def update_flights(self, long, lat, dist):
+def update_flights(self, long, lat, dist, flight_list):
     # Request fro AdsExchange API
     url = 'http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json'
     payload = {'lat': lat, 'lng': long,'fDstL': 0, 'fDstU': dist}
     #r = requests.get('http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat={}&lng={}&fDstL=0&fDstU={}'.format(lat, long, distKm), headers={'Connection':'close'})
     r = requests.get(url, params=payload, headers={'Connection':'close'})
     js_str=r.json()
-    lat_list=[]
-    long_list=[]
+    #lat_list=[]
+    #long_list=[]
     #print(js_str)
     # Chekc if call was correct
     if js_str['lastDv'] == str(-1):
@@ -46,18 +48,74 @@ def update_flights(self, long, lat, dist):
     fig.canvas.draw()
 
     # Get lat, long a name of all flights
+    #print(js_str['stm'])
     for flight in js_str['acList']:
         latitude = flight['Lat']
         longitude = flight['Long']
         icao = flight['Icao']
+        if not flight['Icao'] in flight_list:
+            flight_list[flight['Icao']] = [[], []]
+
+            print(flight['PosTime'])
         lat_list.append(latitude)
         long_list.append(longitude)
         #print((icao, longitude, latitude))
         anonnotation = ax.annotate(icao,
-                    xy=(longitude,latitude), fontsize=8, fontweight='bold')
+                    xy=(longitude,latitude), fontsize=8, fontweight='bold', size=7)
         annotation_list.append(anonnotation)
     track_flights.set_data(long_list,lat_list)
     return track_flights,
+
+def update_flights5(self, long, lat, dist, flight_list):
+    print('---------------------')
+    # Request fro AdsExchange API
+    url = 'http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json'
+    payload = {'lat': lat, 'lng': long,'fDstL': 0, 'fDstU': dist}
+    #r = requests.get('http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat={}&lng={}&fDstL=0&fDstU={}'.format(lat, long, distKm), headers={'Connection':'close'})
+    r = requests.get(url, params=payload, headers={'Connection':'close'})
+    js_str=r.json()
+    #lat_list=[]
+    #long_list=[]
+    #print(js_str)
+    # Chekc if call was correct
+    if js_str['lastDv'] == str(-1):
+        return track_flights, annotation_list
+
+    # Clean annotation list
+    for anot in annotation_list:
+        anot.remove()
+    annotation_list[:] = []
+    fig.canvas.draw()
+    colors = []
+    # Get lat, long a name of all flights
+    #print(js_str['stm'])
+    for flight in js_str['acList']:
+        if not flight['Icao'] in flight_list:
+            flight_list[flight['Icao']] = [[], [], [], []]
+            flight_list[flight['Icao']][3].append(numpy.random.rand(3,1))
+        latitude = flight['Lat']
+        longitude = flight['Long']
+        icao = flight['Icao']
+        postime = flight['PosTime']
+        if len(flight_list[flight['Icao']][2]) > 1 and flight_list[flight['Icao']][2][-1] >= flight['PosTime']:
+            latitude = flight_list[flight['Icao']][0][-1]
+            longitude = flight_list[flight['Icao']][1][-1]
+            postime = flight_list[flight['Icao']][2][-1]
+            print(flight['Icao'])
+        flight_list[flight['Icao']][0].append(latitude)
+        flight_list[flight['Icao']][1].append(longitude)
+        flight_list[flight['Icao']][2].append(postime)
+        lat_list.append(flight_list[flight['Icao']][0][-1])
+        long_list.append(flight_list[flight['Icao']][1][-1])
+
+        #long_list.append(longitude)
+        #print((icao, longitude, latitude))
+        anonnotation = ax.annotate(icao,
+                    xy=(longitude,latitude), fontsize=8, fontweight='bold', size=7)
+        annotation_list.append(anonnotation)
+    track_flights.set_data(long_list,lat_list)
+    return track_flights,
+
 
 def create_extent(long, lat, dist):
     # TODO: rewrite to a loop
@@ -72,7 +130,6 @@ if __name__ == '__main__':
 
     print("loading")
     distKm = 200
-
     # Check if point of interest was correctly given
     # If not take default (Letiste Vaclav Havel)
     if len(sys.argv) == 3:
@@ -88,6 +145,10 @@ if __name__ == '__main__':
     annotation_list = []
     osm_tiles=GoogleTiles()
 
+    flight_list = {}
+    lat_list=[]
+    long_list=[]
+
     extent = create_extent(longitude, latitude,  distKm)
     fig, ax = create_map(projection)
 
@@ -95,9 +156,9 @@ if __name__ == '__main__':
     ax.set_extent(extent, projection)
     ax.add_image(osm_tiles,8,interpolation='spline36')
     ax.plot([longitude],[latitude], 'bs')
-    track_flights, = ax.plot([],[],'ro')#, fillstyle='none')
+    track_flights, = ax.plot([],[],'o', markersize=4, color=[])#, fillstyle='none')
     fig.suptitle('This is a somewhat long figure title', fontsize=16)
 
     # Update the plot every 2 seconds until close
-    anim = animation.FuncAnimation(fig, update_flights,fargs=[longitude, latitude,  distKm], interval=2000, blit=False)
+    anim = animation.FuncAnimation(fig, update_flights5,fargs=[longitude, latitude,  distKm, flight_list], interval=1000, blit=False)
     plt.show()
