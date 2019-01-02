@@ -10,7 +10,7 @@ import sys
 from geopy import Point
 from geopy.distance import vincenty
 import random
-import numpy
+
 
 #GPS COORDINATES OF A POINT WE WANT TO OBSERVE
 DEFAULT_LATITUDE = 50.10049959
@@ -26,45 +26,6 @@ def create_map(projection):
     gl.xformatter = LONGITUDE_FORMATTER
     gl.yformatter = LATITUDE_FORMATTER
     return fig, ax
-
-def update_flights(self, long, lat, dist, flight_list):
-    # Request fro AdsExchange API
-    url = 'http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json'
-    payload = {'lat': lat, 'lng': long,'fDstL': 0, 'fDstU': dist}
-    #r = requests.get('http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat={}&lng={}&fDstL=0&fDstU={}'.format(lat, long, distKm), headers={'Connection':'close'})
-    r = requests.get(url, params=payload, headers={'Connection':'close'})
-    js_str=r.json()
-    #lat_list=[]
-    #long_list=[]
-    #print(js_str)
-    # Chekc if call was correct
-    if js_str['lastDv'] == str(-1):
-        return track_flights, annotation_list
-
-    # Clean annotation list
-    for anot in annotation_list:
-        anot.remove()
-    annotation_list[:] = []
-    fig.canvas.draw()
-
-    # Get lat, long a name of all flights
-    #print(js_str['stm'])
-    for flight in js_str['acList']:
-        latitude = flight['Lat']
-        longitude = flight['Long']
-        icao = flight['Icao']
-        if not flight['Icao'] in flight_list:
-            flight_list[flight['Icao']] = [[], []]
-
-            print(flight['PosTime'])
-        lat_list.append(latitude)
-        long_list.append(longitude)
-        #print((icao, longitude, latitude))
-        anonnotation = ax.annotate(icao,
-                    xy=(longitude,latitude), fontsize=8, fontweight='bold', size=7)
-        annotation_list.append(anonnotation)
-    track_flights.set_data(long_list,lat_list)
-    return track_flights,
 
 def update_flights5(self, long, lat, dist, flight_list):
     print('---------------------')
@@ -86,27 +47,29 @@ def update_flights5(self, long, lat, dist, flight_list):
         anot.remove()
     annotation_list[:] = []
     fig.canvas.draw()
-    colors = []
     # Get lat, long a name of all flights
     #print(js_str['stm'])
     for flight in js_str['acList']:
+        if flight['Icao'] == '8960ED':
+            print(flight['PosTime'])
         if not flight['Icao'] in flight_list:
             flight_list[flight['Icao']] = [[], [], [], []]
-            flight_list[flight['Icao']][3].append(numpy.random.rand(3,1))
+            flight_list[flight['Icao']][3].append(random.choice(['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']))
         latitude = flight['Lat']
         longitude = flight['Long']
         icao = flight['Icao']
         postime = flight['PosTime']
-        if len(flight_list[flight['Icao']][2]) > 1 and flight_list[flight['Icao']][2][-1] >= flight['PosTime']:
+        print(flight_list[flight['Icao']][0][-1] - latitude)
+        if len(flight_list[flight['Icao']][2]) > 1 and int(flight_list[flight['Icao']][2][-1]) >= int(flight['PosTime']):
             latitude = flight_list[flight['Icao']][0][-1]
             longitude = flight_list[flight['Icao']][1][-1]
             postime = flight_list[flight['Icao']][2][-1]
-            print(flight['Icao'])
         flight_list[flight['Icao']][0].append(latitude)
         flight_list[flight['Icao']][1].append(longitude)
         flight_list[flight['Icao']][2].append(postime)
         lat_list.append(flight_list[flight['Icao']][0][-1])
         long_list.append(flight_list[flight['Icao']][1][-1])
+        color_list.append(str(flight_list[flight['Icao']][3][-1])+'o')
 
         #long_list.append(longitude)
         #print((icao, longitude, latitude))
@@ -143,20 +106,22 @@ if __name__ == '__main__':
     # Create projection and tiles. See cartopy pckg for more info
     projection = ccrs.PlateCarree()
     annotation_list = []
-    osm_tiles=GoogleTiles()
+    #osm_tiles=GoogleTiles()
+    osm_tiles=OSM()
 
     flight_list = {}
     lat_list=[]
     long_list=[]
+    color_list = []
 
-    extent = create_extent(longitude, latitude,  distKm)
+    extent = create_extent(longitude, latitude, distKm)
     fig, ax = create_map(projection)
 
     # Put together extented projection with ax
     ax.set_extent(extent, projection)
-    ax.add_image(osm_tiles,8,interpolation='spline36')
-    ax.plot([longitude],[latitude], 'bs')
-    track_flights, = ax.plot([],[],'o', markersize=4, color=[])#, fillstyle='none')
+    ax.add_image(osm_tiles, 8, interpolation='spline36')
+    ax.plot([longitude], [latitude], 'bs')
+    track_flights, = ax.plot([],[],'ro', markersize=4)#, fillstyle='none')
     fig.suptitle('This is a somewhat long figure title', fontsize=16)
 
     # Update the plot every 2 seconds until close
