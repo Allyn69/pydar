@@ -10,7 +10,7 @@ import sys
 from geopy import Point
 from geopy.distance import vincenty
 import random
-
+import numpy as np
 
 #GPS COORDINATES OF A POINT WE WANT TO OBSERVE
 DEFAULT_LATITUDE = 50.10049959
@@ -54,12 +54,13 @@ def update_flights5(self, long, lat, dist, flight_list):
             print(flight['PosTime'])
         if not flight['Icao'] in flight_list:
             flight_list[flight['Icao']] = [[], [], [], []]
-            flight_list[flight['Icao']][3].append(random.choice(['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']))
+            flight_list[flight['Icao']][3].append(random.choice(['b', 'g', 'r', 'c', 'm', 'y', 'k']))
         latitude = flight['Lat']
         longitude = flight['Long']
         icao = flight['Icao']
         postime = flight['PosTime']
-        print(flight_list[flight['Icao']][0][-1] - latitude)
+        if len(flight_list[flight['Icao']][2]) > 1 and flight['Icao'] == '4BD153':
+            print(flight_list[flight['Icao']][0][-1] - latitude)
         if len(flight_list[flight['Icao']][2]) > 1 and int(flight_list[flight['Icao']][2][-1]) >= int(flight['PosTime']):
             latitude = flight_list[flight['Icao']][0][-1]
             longitude = flight_list[flight['Icao']][1][-1]
@@ -69,14 +70,17 @@ def update_flights5(self, long, lat, dist, flight_list):
         flight_list[flight['Icao']][2].append(postime)
         lat_list.append(flight_list[flight['Icao']][0][-1])
         long_list.append(flight_list[flight['Icao']][1][-1])
-        color_list.append(str(flight_list[flight['Icao']][3][-1])+'o')
+        color_list.append(str(flight_list[flight['Icao']][3][-1]))
 
         #long_list.append(longitude)
         #print((icao, longitude, latitude))
         anonnotation = ax.annotate(icao,
-                    xy=(longitude,latitude), fontsize=8, fontweight='bold', size=7)
+                    xy=(longitude,latitude), fontsize=8, fontweight='bold', size=7, color=str(flight_list[flight['Icao']][3][-1]))
         annotation_list.append(anonnotation)
-    track_flights.set_data(long_list,lat_list)
+    data = np.array([long_list,lat_list], dtype=object)
+    data = np.transpose(data)
+    track_flights.set_offsets(data)
+    track_flights.set_facecolors(color_list)
     return track_flights,
 
 
@@ -106,8 +110,8 @@ if __name__ == '__main__':
     # Create projection and tiles. See cartopy pckg for more info
     projection = ccrs.PlateCarree()
     annotation_list = []
-    #osm_tiles=GoogleTiles()
-    osm_tiles=OSM()
+    osm_tiles=GoogleTiles()
+    #osm_tiles=OSM()
 
     flight_list = {}
     lat_list=[]
@@ -120,10 +124,10 @@ if __name__ == '__main__':
     # Put together extented projection with ax
     ax.set_extent(extent, projection)
     ax.add_image(osm_tiles, 8, interpolation='spline36')
-    ax.plot([longitude], [latitude], 'bs')
-    track_flights, = ax.plot([],[],'ro', markersize=4)#, fillstyle='none')
+    #ax.plot([longitude], [latitude], 'bs')
+    track_flights = ax.scatter([],[],marker='o',c=[], s=4)#, fillstyle='none')
     fig.suptitle('This is a somewhat long figure title', fontsize=16)
 
     # Update the plot every 2 seconds until close
-    anim = animation.FuncAnimation(fig, update_flights5,fargs=[longitude, latitude,  distKm, flight_list], interval=1000, blit=False)
+    anim = animation.FuncAnimation(fig, update_flights5,fargs=[longitude, latitude,  distKm, flight_list], interval=2000, blit=False)
     plt.show()
