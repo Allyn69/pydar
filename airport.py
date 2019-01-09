@@ -9,15 +9,14 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from geopy import Point
 from geopy.distance import vincenty
 import numpy as np
-
+import random
 def create_map(long, lat, ext):
-    # create figure and ax with gridlines and formated axes
+    # Create figure and ax with gridlines and formated axes
     projection = ccrs.PlateCarree()
-    tiles = GoogleTiles(style="street")
-    # check if google tiles have fetched correctly
-    # if note use OSM tiles
-    if tiles is None:
-        tiles = OSM()
+    #tiles = GoogleTiles(style="only_streets")
+    # Check if google tiles have fetched correctly
+    # If note use OSM tiles
+    tiles = OSM()
     fig, ax = plt.subplots(figsize=(10, 10),
                            subplot_kw=dict(projection=projection))
     gl = ax.gridlines(draw_labels=True)
@@ -35,15 +34,18 @@ def create_map(long, lat, ext):
 
 def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
     print('---------------------')
+
+    global lat_list
+    global long_list
+    global color_list
+
     # Request fro AdsExchange API
     url = 'http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json'
     payload = {'lat': lat, 'lng': long, 'fDstL': 0, 'fDstU': dist}
     r = requests.get(url, params=payload, headers={'Connection':'close'})
     js_str = r.json()
-    #lat_list=[]
-    #long_list=[]
-    #print(js_str)
-    # Chekc if call was correct
+
+    # Check if call was correct
     if js_str['lastDv'] == str(-1):
         return track_flights, annotation_list
 
@@ -53,24 +55,23 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
     annotation_list[:] = []
 
     # Get lat, long a name of all flights
-    #print(js_str['stm'])
     for flight in js_str['acList']:
         if not flight['Icao'] in flight_list:
-            flight_list[flight['Icao']] = {'lat':[], 'long':[], 'postime':[], 'color':[]}
-            flight_list[flight['Icao']]['color'].append(random.choice(['b', 'g', 'r', 'c', 'm', 'y', 'k']))
+            flight_list[flight['Icao']] = {'lat':[], 'long':[], 'postime':[], 'color':None, 'inimage':10}
+            flight_list[flight['Icao']]['color'] = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
 
         latitude = flight['Lat']
         longitude = flight['Long']
         icao = flight['Icao']
         postime = flight['PosTime']
 
-        #if len(flight_list[flight['Icao']][2]) > 1 and flight['Icao'] == '4BD153':
-            #print(flight_list[flight['Icao']][0][-1] - latitude)
+        #flight_list[icao]['inimage'] = 10
+
         if (len(flight_list[icao]['postime']) > 1 and
                 int(flight_list[icao]['postime'][-1]) >= int(postime)):
-            latitude = flight_list[icao]['lat'][-1]
-            longitude = flight_list[icao]['long'][-1]
-            postime = flight_list[icao]['postime'][-1]
+                latitude = flight_list[icao]['lat'][-1]
+                longitude = flight_list[icao]['long'][-1]
+                postime = flight_list[icao]['postime'][-1]
 
         flight_list[icao]['lat'].append(latitude)
         flight_list[icao]['long'].append(longitude)
@@ -78,18 +79,31 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
 
         lat_list.append(flight_list[icao]['lat'][-1])
         long_list.append(flight_list[icao]['long'][-1])
-        color_list.append(str(flight_list[icao]['color'][-1]))
+        color_list.append(flight_list[icao]['color'])
 
         anonnotation = ax.annotate(icao, xy=(longitude, latitude), fontsize=8,
                                    fontweight='bold', size=7,
-                                   color=str(flight_list[icao]['color'][-1]))
+                                   color=flight_list[icao]['color'])
         annotation_list.append(anonnotation)
-
     data = np.array([long_list, lat_list], dtype=object)
     data = np.transpose(data)
     track_flights.set_offsets(data)
     track_flights.set_facecolors(color_list)
+
+    # for key in flight_list.copy():
+    #     flight_list[key]['inimage'] = flight_list[key]['inimage'] - 1
+    #     print(flight_list[key]['inimage'])
+    #     if flight_list[key]['inimage'] < 1:
+    #         print('{} removed'.format(key))
+    #         for i in flight_list[key]['long']:
+    #             long_list.remove(i)
+    #         for i in flight_list[key]['lat']:
+    #             lat_list.remove(i)
+    #         color_list = [col for col in color_list if col != flight_list[key]['color']]
+    #         del flight_list[key]
+
     return track_flights,
+
 
 def create_extent(long, lat, dist):
     # Callculate gps coordinates for square around point of interest
@@ -130,4 +144,7 @@ if __name__ == '__main__':
 
     # Update the plot every 2 seconds until close
     anim = animation.FuncAnimation(figure, update_flights, fargs=[LONGITUDE, LATITUDE, DISTKM, flight_list, figure, axes, track_flights], interval=2000, blit=False)
-    plt.show()
+    try:
+        plt.show()
+    except ValueError:
+        tiles = OSM()
