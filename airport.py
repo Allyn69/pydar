@@ -10,15 +10,14 @@ from geopy import Point
 from geopy.distance import vincenty
 import numpy as np
 
-#GPS COORDINATES OF A POINT WE WANT TO OBSERVE
-DEFAULT_LATITUDE = 50.10049959
-DEFAULT_LONGITUDE = 14.255998976
-
 def create_map(long, lat, ext):
     # create figure and ax with gridlines and formated axes
     projection = ccrs.PlateCarree()
-    #tiles = GoogleTiles(style="street")
-    tiles = OSM()
+    tiles = GoogleTiles(style="street")
+    # check if google tiles have fetched correctly
+    # if note use OSM tiles
+    if tiles is None:
+        tiles = OSM()
     fig, ax = plt.subplots(figsize=(10, 10),
                            subplot_kw=dict(projection=projection))
     gl = ax.gridlines(draw_labels=True)
@@ -67,23 +66,23 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
 
         #if len(flight_list[flight['Icao']][2]) > 1 and flight['Icao'] == '4BD153':
             #print(flight_list[flight['Icao']][0][-1] - latitude)
-        if (len(flight_list[flight['Icao']]['postime']) > 1 and
-                int(flight_list[flight['Icao']]['postime'][-1]) >= int(flight['PosTime'])):
-            latitude = flight_list[flight['Icao']]['lat'][-1]
-            longitude = flight_list[flight['Icao']]['long'][-1]
-            postime = flight_list[flight['Icao']]['postime'][-1]
+        if (len(flight_list[icao]['postime']) > 1 and
+                int(flight_list[icao]['postime'][-1]) >= int(postime)):
+            latitude = flight_list[icao]['lat'][-1]
+            longitude = flight_list[icao]['long'][-1]
+            postime = flight_list[icao]['postime'][-1]
 
-        flight_list[flight['Icao']]['lat'].append(latitude)
-        flight_list[flight['Icao']]['long'].append(longitude)
-        flight_list[flight['Icao']]['postime'].append(postime)
+        flight_list[icao]['lat'].append(latitude)
+        flight_list[icao]['long'].append(longitude)
+        flight_list[icao]['postime'].append(postime)
 
-        lat_list.append(flight_list[flight['Icao']]['lat'][-1])
-        long_list.append(flight_list[flight['Icao']]['long'][-1])
-        color_list.append(str(flight_list[flight['Icao']]['color'][-1]))
+        lat_list.append(flight_list[icao]['lat'][-1])
+        long_list.append(flight_list[icao]['long'][-1])
+        color_list.append(str(flight_list[icao]['color'][-1]))
 
         anonnotation = ax.annotate(icao, xy=(longitude, latitude), fontsize=8,
                                    fontweight='bold', size=7,
-                                   color=str(flight_list[flight['Icao']]['color'][-1]))
+                                   color=str(flight_list[icao]['color'][-1]))
         annotation_list.append(anonnotation)
 
     data = np.array([long_list, lat_list], dtype=object)
