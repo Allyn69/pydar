@@ -68,7 +68,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Peter Pagac** - [PurpleBooth](pagac.peter123@gmail.com)
+* **Peter Pagac** - (pagac.peter123@gmail.com)
 
 ## License
 
