@@ -4,12 +4,14 @@ import requests
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import cartopy.crs as ccrs
-from cartopy.io.img_tiles import OSM, GoogleTiles
+from cartopy.io.img_tiles import OSM, GoogleTiles, Stamen
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from geopy import Point
 from geopy.distance import vincenty
 import numpy as np
 import random
+import cartopy.feature as cpf
+
 def create_map(long, lat, ext):
     # Create figure and ax with gridlines and formated axes
     projection = ccrs.PlateCarree()
@@ -17,6 +19,7 @@ def create_map(long, lat, ext):
     # Check if google tiles have fetched correctly
     # If note use OSM tiles
     tiles = OSM()
+    #tiles = Stamen(style='toner')
     fig, ax = plt.subplots(figsize=(10, 10),
                            subplot_kw=dict(projection=projection))
     gl = ax.gridlines(draw_labels=True)
@@ -26,23 +29,24 @@ def create_map(long, lat, ext):
     gl.yformatter = LATITUDE_FORMATTER
 
     ax.set_extent(ext, projection)
-    ax.add_image(tiles, 8, interpolation='spline36')
+    ax.add_image(tiles, 7, interpolation='spline36')
     ax.plot([long], [lat], 'bs')
     fig.suptitle('Live Flight Tracker', fontsize=16)
-    track_flights = ax.scatter([], [], marker='o', c=[], s=8)
+    track_flights = ax.scatter([], [], marker='o', c=[], s=14, alpha=.85, edgecolors = 'k')
     return fig, ax, track_flights
 
 def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
     print('---------------------')
 
-    global lat_list
-    global long_list
+    global coords_list
     global color_list
 
     # Request fro AdsExchange API
     url = 'http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json'
     payload = {'lat': lat, 'lng': long, 'fDstL': 0, 'fDstU': dist}
     r = requests.get(url, params=payload, headers={'Connection':'close'})
+    if not r.status_code == 200:
+        return track_flights, annotation_list
     js_str = r.json()
 
     # Check if call was correct
@@ -57,50 +61,47 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
     # Get lat, long a name of all flights
     for flight in js_str['acList']:
         if not flight['Icao'] in flight_list:
-            flight_list[flight['Icao']] = {'lat':[], 'long':[], 'postime':[], 'color':None, 'inimage':10}
+            flight_list[flight['Icao']] = {'coords':[], 'postime':[], 'color':None, 'inimage':10}
             flight_list[flight['Icao']]['color'] = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
 
-        latitude = flight['Lat']
-        longitude = flight['Long']
+        coords = (flight['Long'], flight['Lat'])
         icao = flight['Icao']
         postime = flight['PosTime']
 
-        #flight_list[icao]['inimage'] = 10
+        flight_list[icao]['inimage'] = 10
 
         if (len(flight_list[icao]['postime']) > 1 and
                 int(flight_list[icao]['postime'][-1]) >= int(postime)):
-                latitude = flight_list[icao]['lat'][-1]
-                longitude = flight_list[icao]['long'][-1]
+                coords = flight_list[icao]['coords'][-1]
                 postime = flight_list[icao]['postime'][-1]
 
-        flight_list[icao]['lat'].append(latitude)
-        flight_list[icao]['long'].append(longitude)
+        flight_list[icao]['coords'].append(coords)
         flight_list[icao]['postime'].append(postime)
 
-        lat_list.append(flight_list[icao]['lat'][-1])
-        long_list.append(flight_list[icao]['long'][-1])
+        coords_list.append(flight_list[icao]['coords'][-1])
         color_list.append(flight_list[icao]['color'])
 
-        anonnotation = ax.annotate(icao, xy=(longitude, latitude), fontsize=8,
-                                   fontweight='bold', size=7,
+        anonnotation = ax.annotate(icao, xy=coords, fontsize=12,
+                                   fontweight='bold', size=9,
                                    color=flight_list[icao]['color'])
         annotation_list.append(anonnotation)
-    data = np.array([long_list, lat_list], dtype=object)
+
+    uzipped_coords = [[*x] for x in zip(*coords_list)]
+    data = np.array(uzipped_coords, dtype=object)
     data = np.transpose(data)
+
     track_flights.set_offsets(data)
     track_flights.set_facecolors(color_list)
 
-    # for key in flight_list.copy():
-    #     flight_list[key]['inimage'] = flight_list[key]['inimage'] - 1
-    #     print(flight_list[key]['inimage'])
-    #     if flight_list[key]['inimage'] < 1:
-    #         print('{} removed'.format(key))
-    #         for i in flight_list[key]['long']:
-    #             long_list.remove(i)
-    #         for i in flight_list[key]['lat']:
-    #             lat_list.remove(i)
-    #         color_list = [col for col in color_list if col != flight_list[key]['color']]
-    #         del flight_list[key]
+    # Check if flight is still in image if not than delete it
+    for key in flight_list.copy():
+        flight_list[key]['inimage'] = flight_list[key]['inimage'] - 1
+        if flight_list[key]['inimage'] < 1:
+            print('{} removed'.format(key))
+            for i in flight_list[key]['coords']:
+                coords_list.remove(i)
+            color_list = [col for col in color_list if col != flight_list[key]['color']]
+            del flight_list[key]
 
     return track_flights,
 
@@ -137,8 +138,7 @@ if __name__ == '__main__':
 
     # Create projection and tiles. See cartopy pckg for more info
     flight_list = {}
-    lat_list = []
-    long_list = []
+    coords_list = []
     color_list = []
     annotation_list = []
 
