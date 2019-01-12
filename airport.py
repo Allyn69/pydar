@@ -50,7 +50,7 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
     js_str = r.json()
 
     # Check if call was correct
-    if js_str['lastDv'] == str(-1) or not flight_list:
+    if js_str['lastDv'] == str(-1):
         return track_flights, annotation_list
 
     # Clean annotation list
@@ -85,6 +85,8 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
                                    fontweight='bold', size=9,
                                    color=flight_list[icao]['color'])
         annotation_list.append(anonnotation)
+    if not flight_list:
+        return 
 
     uzipped_coords = [[*x] for x in zip(*coords_list)]
     data = np.array(uzipped_coords, dtype=object)
@@ -103,7 +105,7 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
             color_list = [col for col in color_list if col != flight_list[key]['color']]
             del flight_list[key]
 
-    return track_flights,
+    return track_flights, annotation_list
 
 
 def create_extent(long, lat, dist):
