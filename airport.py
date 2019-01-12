@@ -50,7 +50,7 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
     js_str = r.json()
 
     # Check if call was correct
-    if js_str['lastDv'] == str(-1):
+    if js_str['lastDv'] == str(-1) or not flight_list:
         return track_flights, annotation_list
 
     # Clean annotation list
