@@ -30,27 +30,37 @@ Install prerequisites
 cd pydar
 pip install -r ./requirements.txt
 ```
-Now try the Pydar...
+That's it!
 
-Run pydar.py **latitude** **longitude** of a point you want to observe
+## Examples
+How to use Pydar...
+
+For observation of a point you needs it's gps coordinates.
+
+Than just run pydar.py **latitude** **longitude** of the point and ejoy!
 
 For example this command will observe Vaclav Havel Airport in Prague
 ```
 python pydar.py 50.100499598 14.255998976
 ```
-
-## Deployment
-
-Docker here
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
+This will observe ohn F. Kennedy International Airport (JFK)
+```
+python pydar.py 40.6413111, -73.7781391
+```
+## How to use without installation
+If you just want to try the app and you don't want to install all the necessaties, then it is possible to use Docker.
+Just build the image
+```
+docker build -t pydar .
+```
+and run
+```
+docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix airport latitude longitude
+```
+For example Vaclav Havel in docker
+```
+docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix airport 50.100499598 14.255998976
+```
 ## Authors
 
 * **Peter Pagac** - (pagac.peter123@gmail.com)
@@ -61,6 +71,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+* Thank you ADS-B Exchnage for data about flights!
+https://www.adsbexchange.com/
