@@ -1,13 +1,13 @@
-# Live Flight Tracker
+# Real-Time Flight Radar
 
-Live flight tracking terminal app. You provide point from which you want to observe flights and distance to which you want to oserve.
+Live flight tracking terminal app written in Python. All you need to provide is a point from which you want to observe.  Relax and observe planes above your head!
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine.
 
 ### Prerequisites
-What things you need to install the software and how to install them
+You need to install pyhton packages listed in requirements.txt
 
 ```
 Cartopy
@@ -15,43 +15,25 @@ geopy
 requests
 matplotlib
 ```
-
 ### Installing
 
 A step by step series of examples that tell you how to get a development env running
 
-Donwload repository.
+Clone the repository.
 
 ```
-wget https://github.com/QuarKUS7/airport_radar
+git clone https://github.com/QuarKUS7/airport_radar.git
 ```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
+Install prerequisites
 
 ```
-Give an example
+cd pydar
+pip install -r ./requirements.txt
 ```
-
-### And coding style tests
-
-Explain what these tests test and why
-
+Try the Pydar... Run pydar.py latitude longitude
+For example this command will observe Vaclav Havel Airport in Prague
 ```
-Give an example
+python pydar.py 50.100499598 14.255998976
 ```
 
 ## Deployment
