@@ -2,6 +2,8 @@
 
 Live flight tracking terminal app written in Python. All you need to provide is a point from which you want to observe.  Relax and observe planes above your head!
 
+![pydar](pydar.png)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine.
