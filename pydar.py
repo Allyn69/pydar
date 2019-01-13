@@ -123,9 +123,9 @@ if __name__ == '__main__':
     # Initialize the parser
 
     parser = argparse.ArgumentParser(description="Live Flight Tracker")
-    parser.add_argument("longitude", type=float, help="Longitude of a observing point")
     parser.add_argument("latitude", type=float, help="Latitude of a observing point")
-    parser.add_argument("-d", "--distance", type=int, default=200,
+    parser.add_argument("longitude", type=float, help="Longitude of a observing point")
+    parser.add_argument("-d", "--distance", type=int, default=150,
                         help="destination in km to cover from observing point")
     args = parser.parse_args()
 
