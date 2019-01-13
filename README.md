@@ -14,6 +14,7 @@ Cartopy
 geopy
 requests
 matplotlib
+and few others
 ```
 ### Installing
 
@@ -22,7 +23,7 @@ A step by step series of examples that tell you how to get a development env run
 Clone the repository.
 
 ```
-git clone https://github.com/QuarKUS7/airport_radar.git
+git clone https://github.com/QuarKUS7/pydar.git
 ```
 Install prerequisites
 
@@ -32,20 +33,22 @@ pip install -r ./requirements.txt
 ```
 That's it!
 
-## Examples
-How to use Pydar...
-
+## How to use Pydar
 For observation of a point you needs it's gps coordinates.
 
-Than just run pydar.py **latitude** **longitude** of the point and ejoy!
+Than just run pydar.py with arguments **latitude** **longitude** of the point and enjoy!
 
-For example this command will observe Vaclav Havel Airport in Prague
+For example, observation of Vaclav Havel Airport in Prague:
 ```
 python pydar.py 50.100499598 14.255998976
 ```
-This will observe ohn F. Kennedy International Airport (JFK)
+For John F. Kennedy International Airport (JFK)
 ```
 python pydar.py 40.6413111, -73.7781391
+```
+Another option is to use distance parameter. This parameter sets how far to observe from the point. Default value is 150 km.
+```
+python pydar.py 40.6413111, -73.7781391 -d 150
 ```
 ## How to use without installation
 If you just want to try the app and you don't want to install all the necessaties, then it is possible to use Docker.
