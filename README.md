@@ -44,7 +44,7 @@ python pydar.py 50.100499598 14.255998976
 ```
 For John F. Kennedy International Airport (JFK)
 ```
-python pydar.py 40.6413111, -73.7781391
+python pydar.py 40.6413111 -73.7781391
 ```
 Another option is to use distance parameter. This parameter sets how far to observe from the point. Default value is 150 km.
 ```
