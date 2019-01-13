@@ -30,7 +30,10 @@ Install prerequisites
 cd pydar
 pip install -r ./requirements.txt
 ```
-Try the Pydar... Run pydar.py latitude longitude
+Now try the Pydar...
+
+Run pydar.py **latitude** **longitude** of a point you want to observe
+
 For example this command will observe Vaclav Havel Airport in Prague
 ```
 python pydar.py 50.100499598 14.255998976
