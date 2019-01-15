@@ -60,11 +60,11 @@ docker build -t pydar .
 ```
 and run
 ```
-docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix airport latitude longitude
+docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix pydar latitude longitude
 ```
 For example Vaclav Havel in docker
 ```
-docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix airport 50.100499598 14.255998976
+docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix pydar 50.100499598 14.255998976
 ```
 ## Authors
 
