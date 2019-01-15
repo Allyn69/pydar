@@ -17,4 +17,4 @@ RUN pip install -r requirements.txt
 
 ADD pydar.py /
 
-ENTRYPOINT ["python3", "airport.py"]
+ENTRYPOINT ["python3", "pydar.py"]
