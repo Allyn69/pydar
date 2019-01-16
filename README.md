@@ -57,6 +57,7 @@ If you just want to try the app and you don't want to install all the necessatie
 Just build the image
 ```
 docker build -t pydar .
+xhost +
 ```
 and run
 ```
