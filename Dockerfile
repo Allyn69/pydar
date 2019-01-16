@@ -13,7 +13,9 @@ RUN apt-get install -y libproj-dev proj-data proj-bin \
 
 ADD requirements.txt /
 
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
+
+RUN pip3 install numpy==1.16.0
 
 ADD pydar.py /
 
