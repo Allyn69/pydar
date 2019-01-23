@@ -9,7 +9,7 @@ Live flight tracking terminal app written in Python. All you need to provide is 
 These instructions will get you a copy of the project up and running on your local machine.
 
 ### Prerequisites
-You need to install pyhton packages listed in requirements.txt
+You need to install python packages listed in requirements.txt
 
 ```
 Cartopy
@@ -48,20 +48,20 @@ For John F. Kennedy International Airport (JFK)
 ```
 python pydar.py 40.6413111 -73.7781391
 ```
-Another option is to use distance parameter. This parameter sets how far to observe from the point. Default value is 150 km.
+Another optional parameter is distance parameter. This parameter sets how far to observe from the point. Default value is 150 km.
 ```
 python pydar.py 40.6413111, -73.7781391 -d 150
 ```
 ## How to use without installation
 If you just want to try the app and you don't want to install all the necessaties, then it is possible to use Docker.
-Just build the image
+Just build the image in Linux.
 ```
 docker build -t pydar .
 xhost +
 ```
 and run
 ```
-docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix pydar latitude longitude
+docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix pydar **latitude** **longitude**
 ```
 For example Vaclav Havel in docker
 ```
