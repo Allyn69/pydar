@@ -17,6 +17,8 @@ RUN pip3 install -r requirements.txt
 
 RUN pip3 install numpy==1.16.0
 
+ADD pydar . /
+
 ADD pydar.py /
 
 ENTRYPOINT ["python3", "pydar.py"]
