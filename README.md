@@ -63,7 +63,7 @@ and run
 ```
 docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix pydar **latitude** **longitude**
 ```
-For example Vaclav Havel in docker
+For example Vaclav Havel Airport in Prague
 ```
 docker run -ti --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix pydar 50.100499598 14.255998976
 ```
