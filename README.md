@@ -52,9 +52,9 @@ Another optional parameter is distance parameter. This parameter sets how far to
 ```
 python pydar.py 40.6413111, -73.7781391 -d 150
 ```
-## How to use without installation
+## How to use without installation on Linux machine
 If you just want to try the app and you don't want to install all the necessaties, then it is possible to use Docker.
-Just build the image in Linux.
+Just build the image.
 ```
 docker build -t pydar .
 xhost +
