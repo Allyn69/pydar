@@ -1,17 +1,16 @@
 import random
 import argparse
 import requests
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import cartopy.crs as ccrs
+import matplotlib.patheffects as path_effects
 from cartopy.io.img_tiles import OSM, GoogleTiles, Stamen
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+import cartopy.feature as cpf
 from geopy import Point
 from geopy.distance import vincenty
-import numpy as np
-import random
-import cartopy.feature as cpf
-import matplotlib.patheffects as path_effects
 
 # Create global empty variables for update_flights function
 flight_list = {}
@@ -97,17 +96,11 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
         coords_list.append(flight_list[icao]['coords'][-1])
         color_list.append(flight_list[icao]['color'])
 
-        # Create annotation of flight
-        #anonnotation = ax.annotate(icao, xy=coords, fontsize=12,
-        #                           fontweight='bold', size=9,
-        #                           color=flight_list[icao]['color'])
+        # Create annotation of flight each flight
         anonnotation = ax.text(coords[0], coords[1], icao, fontsize=12,
                                    fontweight='bold', size=9,
                                    color=flight_list[icao]['color'],
                                    path_effects=[path_effects.withStroke(linewidth=4, foreground="black")])
-
-        #anonnotation.set_path_effects([path_effects.Stroke(linewidth=3, foreground='black'),
-        #               path_effects.Normal()])
         annotation_list.append(anonnotation)
 
     # Error handling when first call is unsucessful
@@ -139,7 +132,7 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
 
 
 def create_extent(long, lat, dist):
-    # Callculate gps coordinates for dist square around point of interest
+    # Calculate gps coordinates for dist square around point of interest using Vincenty's formula
     extent_north = vincenty(kilometers=dist).destination(Point(lat, long), 0).format_decimal()
     extent_east = vincenty(kilometers=dist).destination(Point(lat, long), 90).format_decimal()
     extent_south = vincenty(kilometers=dist).destination(Point(lat, long), 180).format_decimal()
