@@ -19,6 +19,6 @@ RUN pip3 install numpy==1.16.0
 
 ADD pydar . /
 
-ADD pydar.py /
+ADD run_pydar.py /
 
-ENTRYPOINT ["python3", "pydar.py"]
+ENTRYPOINT ["python3", "run_pydar.py"]
