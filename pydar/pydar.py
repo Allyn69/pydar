@@ -3,10 +3,9 @@ import argparse
 import requests
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import animation
 import cartopy.crs as ccrs
 import matplotlib.patheffects as path_effects
-from cartopy.io.img_tiles import OSM, GoogleTiles, Stamen
+from cartopy.io.img_tiles import OSM
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import cartopy.feature as cpf
 from geopy import Point
@@ -23,6 +22,7 @@ def create_map(long, lat, ext):
     projection = ccrs.PlateCarree()
     # Fetch map tiles
     tiles = OSM()
+
     # Create figure and ax with gridlines and formated axes
     fig, ax = plt.subplots(figsize=(10, 10),
                            subplot_kw=dict(projection=projection))
@@ -31,6 +31,7 @@ def create_map(long, lat, ext):
     gl.ylabels_right = False
     gl.xformatter = LONGITUDE_FORMATTER
     gl.yformatter = LATITUDE_FORMATTER
+
     # Take part of projection calculated by ext
     ax.set_extent(ext, projection)
     # Add tiles to ax with zoom 7 and sline36 interpolation
@@ -39,16 +40,19 @@ def create_map(long, lat, ext):
     ax.plot([long], [lat], 'bs')
     # Add title to plit
     fig.suptitle('Live Flight Tracker', fontsize=16)
+
     # Create empty scatter plot
     track_flights = ax.scatter([], [], marker='o', c=[], s=14, alpha=.85, edgecolors = 'k')
     return fig, ax, track_flights
 
-def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
-    print('---------------------')
+def update_flights(self, long, lat, dist, fig, ax, track_flights):
 
     global coords_list
     global color_list
     global annotation_list
+    global flight_list
+
+    print('---------------------')
 
     # Request to AdsExchange API
     url = 'http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json'
@@ -122,7 +126,6 @@ def update_flights(self, long, lat, dist, flight_list, fig, ax, track_flights):
     for key in flight_list.copy():
         flight_list[key]['inimage'] = flight_list[key]['inimage'] - 1
         if flight_list[key]['inimage'] < 1:
-            print('{} removed'.format(key))
             for i in flight_list[key]['coords']:
                 coords_list.remove(i)
             color_list = [col for col in color_list if col != flight_list[key]['color']]
