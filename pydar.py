@@ -32,7 +32,8 @@ if __name__ == '__main__':
 
     # Update the plot every 2 seconds until close
     #TODO: use blit to speed up
-    anim = animation.FuncAnimation(figure, update_flights, fargs=[LONGITUDE, LATITUDE, DISTKM, flight_list, figure, axes, track_flights], interval=2000, blit=False)
+    anim = animation.FuncAnimation(figure, update_flights, fargs=[LONGITUDE, LATITUDE, DISTKM, flight_list, figure, axes, track_flights],
+                                   interval=2000, blit=False)
     # Incase of missing tiles try to fetch them again
     try:
         plt.show()
