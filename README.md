@@ -2,6 +2,8 @@
 
 Live flight tracking terminal app written in Python. All you need to provide is a point from which you want to observe.  Relax and observe planes above your head!
 
+Each plane is represented by it's ICAO call name and it's trajetory.
+
 ![pydar](pydar.png)
 
 ## Getting Started
