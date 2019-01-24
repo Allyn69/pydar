@@ -4,10 +4,10 @@ Live flight tracking terminal app written in Python. All you need to provide is 
 
 Each plane is represented by it's ICAO call name and it's trajetory.
 
-Screenshot of the app:
+#### Screenshot of the app:
 ![pydar](image_pydar.png)
 
-Gif showing flight movements:
+#### Gif showing flight movements:
 ![pydar](pydar.gif)
 ## Getting Started
 
