@@ -52,7 +52,7 @@ python pydar.py 40.6413111 -73.7781391
 ```
 Another optional parameter is distance parameter. This parameter sets how far to observe from the point. Default value is 150 km.
 ```
-python pydar.py 40.6413111, -73.7781391 -d 150
+python pydar.py 40.6413111 -73.7781391 -d 150
 ```
 ## How to use without installation on Linux machine
 If you just want to try the app and you don't want to install all the necessaties, then it is possible to use Docker.
